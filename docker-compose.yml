@@ -10,6 +10,9 @@ services:
     volumes:
       # 1. 映射宿主机根目录(只读)，以便备份任何文件
       - /:/host:ro
+      # 也可以只映射备份目录
+      # - /docker/vaultwarden:/docker/vaultwarden
+      
       # 2. 数据库持久化(必须，否则重启后任务丢失)
       - ./data:/data
     environment:
