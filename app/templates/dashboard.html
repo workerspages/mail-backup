@@ -12,7 +12,7 @@
         </p>
     </div>
     
-    <!-- 全局设置按钮 (触发弹窗) -->
+    <!-- 全局设置按钮 -->
     <button class="btn btn-neutral btn-sm md:btn-md shadow-lg gap-2" onclick="settings_modal.showModal()">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         全局设置
@@ -21,7 +21,7 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- 左侧：新建任务 (现在占据左侧主要位置) -->
+    <!-- 左侧：新建任务 -->
     <div class="lg:col-span-1">
         <div class="card bg-base-100 shadow-xl border border-base-200 sticky top-6">
             <div class="card-body">
@@ -43,14 +43,12 @@
                                 <span class="label-text-alt text-info cursor-pointer">ℹ️ 路径说明</span>
                             </div>
                         </label>
-                        <!-- 修改处：增加了 value="/host/" -->
                         <input type="text" name="path" value="/host/" placeholder="/host/data/docker_data/..." class="input input-bordered w-full" required />
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="label pt-0"><span class="label-text font-bold">Cron 表达式</span></label>
-                            <!-- 默认值设置为 0 8 * * * -->
                             <input type="text" name="cron" value="0 8 * * *" class="input input-bordered w-full font-mono text-sm" required />
                         </div>
                         <div>
@@ -90,7 +88,7 @@
                 <div class="card-body p-5">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <!-- 任务信息 -->
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1 min-w-0 w-full">
                             <div class="flex items-center gap-3">
                                 <h3 class="card-title text-lg">{{ task.name }}</h3>
                                 {% if task.status == '成功' %}
@@ -123,12 +121,29 @@
                             </div>
                         </div>
 
-                        <!-- 操作按钮 -->
-                        <div class="flex flex-row md:flex-col gap-2 shrink-0">
-                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info text-white w-24 shadow-sm">
+                        <!-- 操作按钮组 -->
+                        <div class="flex flex-row md:flex-col gap-2 shrink-0 md:w-24">
+                            <!-- 运行按钮 -->
+                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info text-white flex-1 md:w-full shadow-sm">
                                 🚀 运行
                             </a>
-                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error text-white w-24 shadow-sm" onclick="return confirm('确定要删除这个备份任务吗？')">
+                            
+                            <!-- 修改按钮 (新增) -->
+                            <!-- 使用 data 属性存储任务信息，方便 JS 读取 -->
+                            <button class="btn btn-sm btn-warning text-white flex-1 md:w-full shadow-sm"
+                                    onclick="openEditModal(this)"
+                                    data-id="{{ task.id }}"
+                                    data-name="{{ task.name }}"
+                                    data-path="{{ task.path }}"
+                                    data-cron="{{ task.cron }}"
+                                    data-subject="{{ task.subject }}"
+                                    data-email="{{ task.to_email or '' }}"
+                                    data-zip="{{ task.zip_password or '' }}">
+                                ✏️ 修改
+                            </button>
+
+                            <!-- 删除按钮 -->
+                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error text-white flex-1 md:w-full shadow-sm" onclick="return confirm('确定要删除这个备份任务吗？')">
                                 🗑️ 删除
                             </a>
                         </div>
@@ -158,12 +173,10 @@
     </h3>
     
     <form action="/settings/save" method="post">
-        <!-- SMTP 设置 -->
+        <!-- (保留原有的 SMTP 设置表单) -->
         <div class="collapse collapse-arrow bg-base-200 mb-2">
             <input type="checkbox" checked /> 
-            <div class="collapse-title font-medium">
-                📧 邮箱发送设置 (SMTP)
-            </div>
+            <div class="collapse-title font-medium">📧 邮箱发送设置 (SMTP)</div>
             <div class="collapse-content">
                 <div class="form-control gap-3 pt-2">
                     <div class="grid grid-cols-3 gap-3">
@@ -176,12 +189,10 @@
                             <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm w-full" required />
                         </div>
                     </div>
-                    
                     <div>
                         <label class="label pt-0"><span class="label-text text-xs">发件邮箱</span></label>
                         <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm w-full" required />
                     </div>
-                    
                     <div>
                         <label class="label pt-0"><span class="label-text text-xs">授权码 / 密码</span></label>
                         <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm w-full" required />
@@ -190,12 +201,10 @@
             </div>
         </div>
 
-<!-- 安全设置 -->
+        <!-- 安全设置 -->
         <div class="collapse collapse-arrow bg-base-200 mb-4">
             <input type="checkbox" /> 
-            <div class="collapse-title font-medium">
-                🔒 面板安全设置
-            </div>
+            <div class="collapse-title font-medium">🔒 面板安全设置</div>
             <div class="collapse-content">
                 <div class="form-control gap-3 pt-2">
                     <div class="grid grid-cols-2 gap-3">
@@ -208,13 +217,9 @@
                             <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm w-full" required />
                         </div>
                     </div>
-                    <!-- 修改了这里：增加了提示信息 -->
                     <div class="alert alert-warning text-xs mt-2 py-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                        <span>
-                            注意：如果 docker-compose.yml 中设置了 PANEL_PASSWORD，此处修改将在重启或刷新后<b>失效</b>。<br>
-                            建议优先在 docker-compose.yml 中修改密码。
-                        </span>
+                        <span>注意：建议优先在 docker-compose.yml 中修改密码，否则重启后可能重置。</span>
                     </div>
                 </div>
             </div>
@@ -223,18 +228,62 @@
         <div class="modal-action justify-between items-center">
             <p class="text-xs opacity-50">修改后无需重启容器</p>
             <div class="flex gap-2">
-                <!-- 关闭按钮 (不提交) -->
                 <button type="button" class="btn btn-ghost" onclick="settings_modal.close()">取消</button>
-                <!-- 提交按钮 -->
                 <button class="btn btn-primary">保存设置</button>
             </div>
         </div>
     </form>
   </div>
-  <!-- 点击遮罩层关闭 -->
-  <form method="dialog" class="modal-backdrop">
-    <button>close</button>
-  </form>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ================= 模态框：修改任务 (新增) ================= -->
+<dialog id="edit_task_modal" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <span>✏️</span> 修改任务配置
+    </h3>
+    
+    <!-- form action 将由 JS 动态设置 -->
+    <form id="edit_task_form" method="post" class="form-control gap-4">
+        <div>
+            <label class="label pt-0"><span class="label-text font-bold">任务名称</span></label>
+            <input type="text" id="edit_name" name="name" class="input input-bordered w-full" required />
+        </div>
+        
+        <div>
+            <label class="label pt-0"><span class="label-text font-bold">容器内路径</span></label>
+            <input type="text" id="edit_path" name="path" class="input input-bordered w-full" required />
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="label pt-0"><span class="label-text font-bold">Cron 表达式</span></label>
+                <input type="text" id="edit_cron" name="cron" class="input input-bordered w-full font-mono text-sm" required />
+            </div>
+            <div>
+                <label class="label pt-0"><span class="label-text font-bold">压缩密码</span></label>
+                <input type="text" id="edit_zip" name="zip_password" placeholder="留空不加密" class="input input-bordered w-full text-sm" />
+            </div>
+        </div>
+        
+        <div>
+            <label class="label pt-0"><span class="label-text font-bold">邮件标题备注</span></label>
+            <input type="text" id="edit_subject" name="subject" class="input input-bordered w-full" required />
+        </div>
+        
+        <div>
+            <label class="label pt-0"><span class="label-text font-bold">接收邮箱 (选填)</span></label>
+            <input type="text" id="edit_email" name="to_email" placeholder="留空则发给发件人自己" class="input input-bordered w-full" />
+        </div>
+
+        <div class="modal-action justify-end">
+            <button type="button" class="btn btn-ghost" onclick="edit_task_modal.close()">取消</button>
+            <button class="btn btn-warning">保存修改</button>
+        </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
 
 <script>
@@ -245,5 +294,31 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    // 打开修改弹窗并填充数据
+    function openEditModal(btn) {
+        // 1. 获取按钮上的数据
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const path = btn.getAttribute('data-path');
+        const cron = btn.getAttribute('data-cron');
+        const subject = btn.getAttribute('data-subject');
+        const email = btn.getAttribute('data-email');
+        const zip = btn.getAttribute('data-zip');
+
+        // 2. 动态设置表单提交地址
+        document.getElementById('edit_task_form').action = "/task/edit/" + id;
+
+        // 3. 填充 Input
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_path').value = path;
+        document.getElementById('edit_cron').value = cron;
+        document.getElementById('edit_subject').value = subject;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_zip').value = zip;
+
+        // 4. 显示弹窗
+        document.getElementById('edit_task_modal').showModal();
+    }
 </script>
 {% endblock %}
