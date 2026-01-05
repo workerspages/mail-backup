@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mail-backup:
-    image: ghcr.io/workerspages/docker-mail-backup:latest
+    image: ghcr.io/workerspages/mail-backup:latest
     container_name: mail-backup
     restart: always
     ports:
