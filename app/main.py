@@ -276,3 +276,31 @@ async def run_now(task_id: int, session: Session = Depends(get_session)):
     # 立即异步运行一次任务
     scheduler.add_job(run_backup_job, args=[task_id])
     return RedirectResponse("/", status_code=302)
+
+@app.post("/task/edit/{task_id}")
+async def edit_task(
+    task_id: int,
+    name: str = Form(...), 
+    path: str = Form(...), 
+    cron: str = Form(...),
+    subject: str = Form(...), 
+    to_email: str = Form(""), 
+    zip_password: str = Form(""),
+    session: Session = Depends(get_session)
+):
+    task = session.get(BackupTask, task_id)
+    if task:
+        task.name = name
+        task.path = path
+        task.cron = cron
+        task.subject = subject
+        task.to_email = to_email
+        task.zip_password = zip_password
+        
+        session.add(task)
+        session.commit()
+        
+        # 修改后必须刷新调度器，否则定时任务还是旧的
+        refresh_scheduler()
+        
+    return RedirectResponse("/", status_code=302)
