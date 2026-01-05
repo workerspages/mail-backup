@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-center items-center h-[80vh]">
+    <div class="card w-96 bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title justify-center mb-4">管理员登录</h2>
+            <form action="/login" method="post">
+                <input type="password" name="password" placeholder="请输入密码" class="input input-bordered w-full mb-4" required />
+                <button class="btn btn-primary w-full">进入面板</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
