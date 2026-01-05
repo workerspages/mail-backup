@@ -8,7 +8,7 @@ services:
       - "8000:8000"
     volumes:
       # 1. 映射宿主机需要备份的目录到容器内
-      - /data/docker_data:/data/docker_data
+      - /:/host:ro  # :ro 表示 Read-Only (只读)，非常重要！
       # 2. 持久化数据库文件
       - ./data:/data
     environment:
