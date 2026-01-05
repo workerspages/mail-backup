@@ -1,76 +1,192 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- 左侧：全局设置 -->
-    <div class="md:col-span-1">
-        <div class="card bg-base-100 shadow-xl">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- 左侧：设置与添加 -->
+    <div class="lg:col-span-1 space-y-6">
+        
+        <!-- 全局配置卡片 -->
+        <div class="card bg-base-100 shadow-xl border border-base-200">
             <div class="card-body">
-                <h2 class="card-title">⚙️ 全局配置</h2>
-                <form action="/settings/save" method="post" class="form-control gap-2">
-                    <label class="label"><span class="label-text">SMTP 服务器</span></label>
-                    <input type="text" name="smtp_server" value="{{ settings.smtp_server }}" class="input input-bordered input-sm" />
+                <h2 class="card-title flex items-center gap-2">
+                    <span>⚙️</span> 全局配置
+                </h2>
+                <div class="divider my-0"></div>
+                
+                <form action="/settings/save" method="post" class="form-control gap-3">
+                    <!-- SMTP 设置 -->
+                    <div class="text-sm font-bold opacity-70 mt-2">邮箱发送设置 (SMTP)</div>
                     
-                    <label class="label"><span class="label-text">端口 (SSL)</span></label>
-                    <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm" />
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">服务器地址</span></label>
+                            <input type="text" name="smtp_server" value="{{ settings.smtp_server }}" class="input input-bordered input-sm w-full" placeholder="smtp.qq.com" required />
+                        </div>
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">SSL 端口</span></label>
+                            <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm w-full" placeholder="465" required />
+                        </div>
+                    </div>
                     
-                    <label class="label"><span class="label-text">发件邮箱</span></label>
-                    <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm" />
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">发件邮箱</span></label>
+                        <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm w-full" required />
+                    </div>
                     
-                    <label class="label"><span class="label-text">授权码/密码</span></label>
-                    <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm" />
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">授权码 / 密码</span></label>
+                        <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm w-full" required />
+                    </div>
+
+                    <!-- 面板安全设置 -->
+                    <div class="text-sm font-bold opacity-70 mt-4">面板安全设置</div>
                     
-                    <label class="label"><span class="label-text">面板登录密码</span></label>
-                    <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm" />
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">登录账号</span></label>
+                            <input type="text" name="admin_user" value="{{ settings.admin_user }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">登录密码</span></label>
+                            <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                    </div>
                     
-                    <button class="btn btn-primary mt-4">保存设置</button>
+                    <button class="btn btn-primary btn-sm mt-4">保存设置</button>
                 </form>
             </div>
         </div>
         
-        <div class="card bg-base-100 shadow-xl mt-6">
+        <!-- 新建任务卡片 -->
+        <div class="card bg-base-100 shadow-xl border border-base-200">
             <div class="card-body">
-                <h2 class="card-title">➕ 新建任务</h2>
-                <form action="/task/add" method="post" class="form-control gap-2">
-                    <input type="text" name="name" placeholder="任务名称 (如: Vaultwarden)" class="input input-bordered input-sm" required />
-                    <input type="text" name="path" placeholder="容器路径 (如: /data/vaultwarden)" class="input input-bordered input-sm" required />
-                    <input type="text" name="cron" placeholder="Cron表达式 (如: 0 4 * * *)" class="input input-bordered input-sm" required />
-                    <input type="text" name="subject" placeholder="邮件标题备注" class="input input-bordered input-sm" required />
-                    <input type="text" name="to_email" placeholder="接收邮箱 (留空同发件人)" class="input input-bordered input-sm" />
-                    <input type="text" name="zip_password" placeholder="压缩密码 (可选)" class="input input-bordered input-sm" />
-                    <button class="btn btn-success mt-4">添加任务</button>
+                <h2 class="card-title flex items-center gap-2">
+                    <span>➕</span> 新建备份任务
+                </h2>
+                <div class="divider my-0"></div>
+                
+                <form action="/task/add" method="post" class="form-control gap-3">
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">任务名称</span></label>
+                        <input type="text" name="name" placeholder="例如: Vaultwarden" class="input input-bordered input-sm w-full" required />
+                    </div>
+                    
+                    <div>
+                        <label class="label pt-0 flex justify-between">
+                            <span class="label-text text-xs">容器内路径</span>
+                            <span class="label-text-alt text-xs text-warning">推荐使用 /host/...</span>
+                        </label>
+                        <input type="text" name="path" placeholder="/host/data/docker_data/vaultwarden" class="input input-bordered input-sm w-full" required />
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">Cron 表达式</span></label>
+                            <input type="text" name="cron" placeholder="0 4 * * *" class="input input-bordered input-sm w-full" required />
+                        </div>
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">压缩密码 (选填)</span></label>
+                            <input type="text" name="zip_password" placeholder="留空不加密" class="input input-bordered input-sm w-full" />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">邮件标题备注</span></label>
+                        <input type="text" name="subject" placeholder="例如: 香港服务器数据" class="input input-bordered input-sm w-full" required />
+                    </div>
+                    
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">接收邮箱 (选填)</span></label>
+                        <input type="text" name="to_email" placeholder="留空则发给发件人自己" class="input input-bordered input-sm w-full" />
+                    </div>
+
+                    <button class="btn btn-success btn-sm mt-2 text-white">添加任务</button>
                 </form>
             </div>
         </div>
     </div>
 
     <!-- 右侧：任务列表 -->
-    <div class="md:col-span-2">
-        <h2 class="text-2xl font-bold mb-4">📦 备份任务列表</h2>
+    <div class="lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+                📦 任务列表 <span class="badge badge-neutral">{{ tasks|length }}</span>
+            </h2>
+            <div class="text-sm opacity-60">
+                服务器时间: <span id="clock">--:--:--</span>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-4">
             {% for task in tasks %}
-            <div class="card bg-base-100 shadow-xl border-l-4 border-accent">
-                <div class="card-body">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="card-title">{{ task.name }}</h3>
-                            <p class="text-sm opacity-70">{{ task.path }}</p>
-                            <div class="badge badge-outline mt-2">{{ task.cron }}</div>
-                            <div class="badge badge-ghost mt-2">上次: {{ task.last_run }}</div>
+            <div class="card bg-base-100 shadow-xl border-l-4 {% if task.status == '成功' %}border-success{% elif task.status == '失败' %}border-error{% elif task.status == '运行中...' %}border-info{% else %}border-base-300{% endif %}">
+                <div class="card-body p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <!-- 任务信息 -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h3 class="card-title text-lg">{{ task.name }}</h3>
+                                {% if task.status == '成功' %}
+                                    <span class="badge badge-success badge-sm text-white">成功</span>
+                                {% elif task.status == '失败' %}
+                                    <span class="badge badge-error badge-sm text-white">失败</span>
+                                {% elif task.status == '运行中...' %}
+                                    <span class="loading loading-spinner loading-xs text-info"></span> <span class="text-info text-xs">运行中</span>
+                                {% else %}
+                                    <span class="badge badge-ghost badge-sm">待机</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-xs opacity-70 mt-1 font-mono truncate" title="{{ task.path }}">
+                                📂 {{ task.path }}
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <div class="badge badge-outline badge-sm gap-1">
+                                    🕒 Cron: {{ task.cron }}
+                                </div>
+                                <div class="badge badge-outline badge-sm gap-1">
+                                    📧 {{ task.subject }}
+                                </div>
+                                <div class="badge badge-ghost badge-sm gap-1">
+                                    ⏱️ 上次运行: {{ task.last_run }}
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex flex-col gap-2">
-                            <span class="badge {% if task.status == '成功' %}badge-success{% elif task.status == '待机' %}badge-ghost{% else %}badge-error{% endif %}">
-                                {{ task.status }}
-                            </span>
-                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info">🚀 立即运行</a>
-                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error" onclick="return confirm('确定删除吗？')">🗑️</a>
+
+                        <!-- 操作按钮 -->
+                        <div class="flex flex-row md:flex-col gap-2 shrink-0">
+                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info text-white w-24">
+                                🚀 运行
+                            </a>
+                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error text-white w-24" onclick="return confirm('确定要删除这个备份任务吗？')">
+                                🗑️ 删除
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
             {% else %}
-            <div class="alert">目前还没有备份任务，请在左侧添加。</div>
+            <div class="hero bg-base-100 rounded-box border border-base-200 py-10">
+                <div class="hero-content text-center">
+                    <div class="max-w-md">
+                        <h1 class="text-3xl font-bold opacity-20">📭</h1>
+                        <p class="py-4 opacity-60">暂无备份任务，请在左侧添加第一个任务。</p>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+    // 简单的时钟显示
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
 {% endblock %}
