@@ -1,12 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="flex justify-center items-center h-[80vh]">
-    <div class="card w-96 bg-base-100 shadow-xl">
+    <div class="card w-96 bg-base-100 shadow-xl border border-base-300">
         <div class="card-body">
-            <h2 class="card-title justify-center mb-4">管理员登录</h2>
+            <h2 class="card-title justify-center mb-6 text-2xl font-bold">🛡️ 备份面板登录</h2>
+            
+            <!-- 错误提示横幅 -->
+            {% if request.query_params.get('error') %}
+            <div role="alert" class="alert alert-error text-sm py-2 mb-4 rounded-lg flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>账号或密码错误</span>
+            </div>
+            {% endif %}
+
             <form action="/login" method="post">
-                <input type="password" name="password" placeholder="请输入密码" class="input input-bordered w-full mb-4" required />
-                <button class="btn btn-primary w-full">进入面板</button>
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text font-semibold">账号</span>
+                    </label>
+                    <input type="text" name="username" placeholder="请输入管理员账号" class="input input-bordered w-full" required />
+                </div>
+                
+                <div class="form-control w-full mb-6">
+                    <label class="label">
+                        <span class="label-text font-semibold">密码</span>
+                    </label>
+                    <input type="password" name="password" placeholder="请输入密码" class="input input-bordered w-full" required />
+                </div>
+                
+                <button class="btn btn-primary w-full shadow-lg">立即登录</button>
             </form>
         </div>
     </div>
