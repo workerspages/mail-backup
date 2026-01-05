@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlmodel
+apscheduler
+requests
+python-jose[cryptography]
+passlib[bcrypt]
