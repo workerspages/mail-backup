@@ -190,7 +190,7 @@
             </div>
         </div>
 
-        <!-- 安全设置 -->
+<!-- 安全设置 -->
         <div class="collapse collapse-arrow bg-base-200 mb-4">
             <input type="checkbox" /> 
             <div class="collapse-title font-medium">
@@ -208,8 +208,13 @@
                             <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm w-full" required />
                         </div>
                     </div>
-                    <div class="text-xs text-warning mt-2">
-                        提示: 也可在 docker-compose 中通过环境变量修改。
+                    <!-- 修改了这里：增加了提示信息 -->
+                    <div class="alert alert-warning text-xs mt-2 py-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <span>
+                            注意：如果 docker-compose.yml 中设置了 PANEL_PASSWORD，此处修改将在重启或刷新后<b>失效</b>。<br>
+                            建议优先在 docker-compose.yml 中修改密码。
+                        </span>
                     </div>
                 </div>
             </div>
