@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  # 镜像名称，改为你的 DockerHub 用户名/仓库名
-  IMAGE_NAME: your_dockerhub_username/mail-backup-pro
+  # GHCR 保持原样，因为它本身就是 username/repo 格式
   GHCR_IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
@@ -21,6 +20,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      # ✅ 核心修改：动态生成 IMAGE_NAME (自动读取仓库名 + 转小写)
+      - name: Set up Image Name
+        run: |
+          # 获取仓库名
+          REPO_NAME=${{ github.event.repository.name }}
+          # 转小写
+          REPO_NAME=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')
+          # 写入环境变量文件，供后续步骤使用
+          echo "IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -57,7 +66,6 @@ jobs:
         with:
           context: .
           push: true
-          # 同时构建 x86 和 ARM 架构
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
