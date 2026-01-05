@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- 左侧：全局设置 -->
+    <div class="md:col-span-1">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">⚙️ 全局配置</h2>
+                <form action="/settings/save" method="post" class="form-control gap-2">
+                    <label class="label"><span class="label-text">SMTP 服务器</span></label>
+                    <input type="text" name="smtp_server" value="{{ settings.smtp_server }}" class="input input-bordered input-sm" />
+                    
+                    <label class="label"><span class="label-text">端口 (SSL)</span></label>
+                    <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm" />
+                    
+                    <label class="label"><span class="label-text">发件邮箱</span></label>
+                    <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm" />
+                    
+                    <label class="label"><span class="label-text">授权码/密码</span></label>
+                    <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm" />
+                    
+                    <label class="label"><span class="label-text">面板登录密码</span></label>
+                    <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm" />
+                    
+                    <button class="btn btn-primary mt-4">保存设置</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title">➕ 新建任务</h2>
+                <form action="/task/add" method="post" class="form-control gap-2">
+                    <input type="text" name="name" placeholder="任务名称 (如: Vaultwarden)" class="input input-bordered input-sm" required />
+                    <input type="text" name="path" placeholder="容器路径 (如: /data/vaultwarden)" class="input input-bordered input-sm" required />
+                    <input type="text" name="cron" placeholder="Cron表达式 (如: 0 4 * * *)" class="input input-bordered input-sm" required />
+                    <input type="text" name="subject" placeholder="邮件标题备注" class="input input-bordered input-sm" required />
+                    <input type="text" name="to_email" placeholder="接收邮箱 (留空同发件人)" class="input input-bordered input-sm" />
+                    <input type="text" name="zip_password" placeholder="压缩密码 (可选)" class="input input-bordered input-sm" />
+                    <button class="btn btn-success mt-4">添加任务</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：任务列表 -->
+    <div class="md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4">📦 备份任务列表</h2>
+        <div class="grid grid-cols-1 gap-4">
+            {% for task in tasks %}
+            <div class="card bg-base-100 shadow-xl border-l-4 border-accent">
+                <div class="card-body">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="card-title">{{ task.name }}</h3>
+                            <p class="text-sm opacity-70">{{ task.path }}</p>
+                            <div class="badge badge-outline mt-2">{{ task.cron }}</div>
+                            <div class="badge badge-ghost mt-2">上次: {{ task.last_run }}</div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <span class="badge {% if task.status == '成功' %}badge-success{% elif task.status == '待机' %}badge-ghost{% else %}badge-error{% endif %}">
+                                {{ task.status }}
+                            </span>
+                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info">🚀 立即运行</a>
+                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error" onclick="return confirm('确定删除吗？')">🗑️</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert">目前还没有备份任务，请在左侧添加。</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
