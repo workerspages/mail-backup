@@ -1,106 +1,76 @@
 {% extends "base.html" %}
 {% block content %}
+
+<!-- 顶部导航栏 / 标题区域 -->
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+            🛡️ 备份控制台
+        </h1>
+        <p class="text-sm opacity-60 mt-1">
+            服务器时间: <span id="clock" class="font-mono">--:--:--</span>
+        </p>
+    </div>
+    
+    <!-- 全局设置按钮 (触发弹窗) -->
+    <button class="btn btn-neutral btn-sm md:btn-md shadow-lg gap-2" onclick="settings_modal.showModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        全局设置
+    </button>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- 左侧：设置与添加 -->
-    <div class="lg:col-span-1 space-y-6">
-        
-        <!-- 全局配置卡片 -->
-        <div class="card bg-base-100 shadow-xl border border-base-200">
+    <!-- 左侧：新建任务 (现在占据左侧主要位置) -->
+    <div class="lg:col-span-1">
+        <div class="card bg-base-100 shadow-xl border border-base-200 sticky top-6">
             <div class="card-body">
-                <h2 class="card-title flex items-center gap-2">
-                    <span>⚙️</span> 全局配置
-                </h2>
-                <div class="divider my-0"></div>
-                
-                <form action="/settings/save" method="post" class="form-control gap-3">
-                    <!-- SMTP 设置 -->
-                    <div class="text-sm font-bold opacity-70 mt-2">邮箱发送设置 (SMTP)</div>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="label pt-0"><span class="label-text text-xs">服务器地址</span></label>
-                            <input type="text" name="smtp_server" value="{{ settings.smtp_server }}" class="input input-bordered input-sm w-full" placeholder="smtp.qq.com" required />
-                        </div>
-                        <div>
-                            <label class="label pt-0"><span class="label-text text-xs">SSL 端口</span></label>
-                            <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm w-full" placeholder="465" required />
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="label pt-0"><span class="label-text text-xs">发件邮箱</span></label>
-                        <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm w-full" required />
-                    </div>
-                    
-                    <div>
-                        <label class="label pt-0"><span class="label-text text-xs">授权码 / 密码</span></label>
-                        <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm w-full" required />
-                    </div>
-
-                    <!-- 面板安全设置 -->
-                    <div class="text-sm font-bold opacity-70 mt-4">面板安全设置</div>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="label pt-0"><span class="label-text text-xs">登录账号</span></label>
-                            <input type="text" name="admin_user" value="{{ settings.admin_user }}" class="input input-bordered input-sm w-full" required />
-                        </div>
-                        <div>
-                            <label class="label pt-0"><span class="label-text text-xs">登录密码</span></label>
-                            <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm w-full" required />
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-primary btn-sm mt-4">保存设置</button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- 新建任务卡片 -->
-        <div class="card bg-base-100 shadow-xl border border-base-200">
-            <div class="card-body">
-                <h2 class="card-title flex items-center gap-2">
+                <h2 class="card-title flex items-center gap-2 text-secondary">
                     <span>➕</span> 新建备份任务
                 </h2>
-                <div class="divider my-0"></div>
+                <div class="divider my-1"></div>
                 
-                <form action="/task/add" method="post" class="form-control gap-3">
+                <form action="/task/add" method="post" class="form-control gap-4">
                     <div>
-                        <label class="label pt-0"><span class="label-text text-xs">任务名称</span></label>
-                        <input type="text" name="name" placeholder="例如: Vaultwarden" class="input input-bordered input-sm w-full" required />
+                        <label class="label pt-0"><span class="label-text font-bold">任务名称</span></label>
+                        <input type="text" name="name" placeholder="例如: Vaultwarden" class="input input-bordered w-full" required />
                     </div>
                     
                     <div>
                         <label class="label pt-0 flex justify-between">
-                            <span class="label-text text-xs">容器内路径</span>
-                            <span class="label-text-alt text-xs text-warning">推荐使用 /host/...</span>
+                            <span class="label-text font-bold">容器内路径</span>
+                            <div class="tooltip tooltip-right" data-tip="建议在 docker-compose 中挂载 /:/host，此处即可填写宿主机真实路径">
+                                <span class="label-text-alt text-info cursor-pointer">ℹ️ 路径说明</span>
+                            </div>
                         </label>
-                        <input type="text" name="path" placeholder="/host/data/docker_data/vaultwarden" class="input input-bordered input-sm w-full" required />
+                        <input type="text" name="path" placeholder="/host/data/docker_data/..." class="input input-bordered w-full" required />
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="label pt-0"><span class="label-text text-xs">Cron 表达式</span></label>
-                            <input type="text" name="cron" placeholder="0 4 * * *" class="input input-bordered input-sm w-full" required />
+                            <label class="label pt-0"><span class="label-text font-bold">Cron 表达式</span></label>
+                            <!-- 默认值设置为 0 8 * * * -->
+                            <input type="text" name="cron" value="0 8 * * *" class="input input-bordered w-full font-mono text-sm" required />
                         </div>
                         <div>
-                            <label class="label pt-0"><span class="label-text text-xs">压缩密码 (选填)</span></label>
-                            <input type="text" name="zip_password" placeholder="留空不加密" class="input input-bordered input-sm w-full" />
+                            <label class="label pt-0"><span class="label-text font-bold">压缩密码</span></label>
+                            <input type="text" name="zip_password" placeholder="留空不加密" class="input input-bordered w-full text-sm" />
                         </div>
                     </div>
                     
                     <div>
-                        <label class="label pt-0"><span class="label-text text-xs">邮件标题备注</span></label>
-                        <input type="text" name="subject" placeholder="例如: 香港服务器数据" class="input input-bordered input-sm w-full" required />
+                        <label class="label pt-0"><span class="label-text font-bold">邮件标题备注</span></label>
+                        <input type="text" name="subject" placeholder="例如: 香港服务器数据" class="input input-bordered w-full" required />
                     </div>
                     
                     <div>
-                        <label class="label pt-0"><span class="label-text text-xs">接收邮箱 (选填)</span></label>
-                        <input type="text" name="to_email" placeholder="留空则发给发件人自己" class="input input-bordered input-sm w-full" />
+                        <label class="label pt-0"><span class="label-text font-bold">接收邮箱 (选填)</span></label>
+                        <input type="text" name="to_email" placeholder="留空则发给发件人自己" class="input input-bordered w-full" />
                     </div>
 
-                    <button class="btn btn-success btn-sm mt-2 text-white">添加任务</button>
+                    <button class="btn btn-primary mt-2 shadow-lg w-full">
+                        确认添加任务
+                    </button>
                 </form>
             </div>
         </div>
@@ -108,23 +78,19 @@
 
     <!-- 右侧：任务列表 -->
     <div class="lg:col-span-2">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold flex items-center gap-2">
-                📦 任务列表 <span class="badge badge-neutral">{{ tasks|length }}</span>
-            </h2>
-            <div class="text-sm opacity-60">
-                服务器时间: <span id="clock">--:--:--</span>
-            </div>
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-bold">📦 任务列表</h2>
+            <div class="badge badge-neutral">{{ tasks|length }}</div>
         </div>
 
         <div class="grid grid-cols-1 gap-4">
             {% for task in tasks %}
-            <div class="card bg-base-100 shadow-xl border-l-4 {% if task.status == '成功' %}border-success{% elif task.status == '失败' %}border-error{% elif task.status == '运行中...' %}border-info{% else %}border-base-300{% endif %}">
-                <div class="card-body p-6">
+            <div class="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-200 border-l-4 {% if task.status == '成功' %}border-success{% elif task.status == '失败' %}border-error{% elif task.status == '运行中...' %}border-info{% else %}border-base-300{% endif %}">
+                <div class="card-body p-5">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <!-- 任务信息 -->
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 <h3 class="card-title text-lg">{{ task.name }}</h3>
                                 {% if task.status == '成功' %}
                                     <span class="badge badge-success badge-sm text-white">成功</span>
@@ -137,29 +103,31 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="text-xs opacity-70 mt-1 font-mono truncate" title="{{ task.path }}">
+                            <div class="text-xs opacity-70 mt-1 font-mono truncate bg-base-200 p-1 rounded inline-block max-w-full" title="{{ task.path }}">
                                 📂 {{ task.path }}
                             </div>
                             
                             <div class="flex flex-wrap gap-2 mt-3">
                                 <div class="badge badge-outline badge-sm gap-1">
-                                    🕒 Cron: {{ task.cron }}
-                                </div>
-                                <div class="badge badge-outline badge-sm gap-1">
-                                    📧 {{ task.subject }}
+                                    🕒 {{ task.cron }}
                                 </div>
                                 <div class="badge badge-ghost badge-sm gap-1">
-                                    ⏱️ 上次运行: {{ task.last_run }}
+                                    ⏱️ 上次: {{ task.last_run }}
                                 </div>
+                                {% if task.to_email %}
+                                <div class="badge badge-ghost badge-sm gap-1" title="发给: {{ task.to_email }}">
+                                    📧 指定收件人
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
 
                         <!-- 操作按钮 -->
                         <div class="flex flex-row md:flex-col gap-2 shrink-0">
-                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info text-white w-24">
+                            <a href="/task/run/{{ task.id }}" class="btn btn-sm btn-info text-white w-24 shadow-sm">
                                 🚀 运行
                             </a>
-                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error text-white w-24" onclick="return confirm('确定要删除这个备份任务吗？')">
+                            <a href="/task/delete/{{ task.id }}" class="btn btn-sm btn-error text-white w-24 shadow-sm" onclick="return confirm('确定要删除这个备份任务吗？')">
                                 🗑️ 删除
                             </a>
                         </div>
@@ -167,11 +135,12 @@
                 </div>
             </div>
             {% else %}
-            <div class="hero bg-base-100 rounded-box border border-base-200 py-10">
+            <div class="hero bg-base-100 rounded-box border border-base-200 py-12">
                 <div class="hero-content text-center">
                     <div class="max-w-md">
-                        <h1 class="text-3xl font-bold opacity-20">📭</h1>
-                        <p class="py-4 opacity-60">暂无备份任务，请在左侧添加第一个任务。</p>
+                        <div class="text-6xl mb-4">📭</div>
+                        <h1 class="text-2xl font-bold">暂无任务</h1>
+                        <p class="py-4 opacity-60">列表空空如也，请在左侧添加您的第一个备份任务。</p>
                     </div>
                 </div>
             </div>
@@ -180,11 +149,93 @@
     </div>
 </div>
 
+<!-- ================= 模态框：全局设置 ================= -->
+<dialog id="settings_modal" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <span>⚙️</span> 全局配置
+    </h3>
+    
+    <form action="/settings/save" method="post">
+        <!-- SMTP 设置 -->
+        <div class="collapse collapse-arrow bg-base-200 mb-2">
+            <input type="checkbox" checked /> 
+            <div class="collapse-title font-medium">
+                📧 邮箱发送设置 (SMTP)
+            </div>
+            <div class="collapse-content">
+                <div class="form-control gap-3 pt-2">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-2">
+                            <label class="label pt-0"><span class="label-text text-xs">服务器地址</span></label>
+                            <input type="text" name="smtp_server" value="{{ settings.smtp_server }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">SSL 端口</span></label>
+                            <input type="number" name="smtp_port" value="{{ settings.smtp_port }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">发件邮箱</span></label>
+                        <input type="text" name="smtp_user" value="{{ settings.smtp_user }}" class="input input-bordered input-sm w-full" required />
+                    </div>
+                    
+                    <div>
+                        <label class="label pt-0"><span class="label-text text-xs">授权码 / 密码</span></label>
+                        <input type="password" name="smtp_password" value="{{ settings.smtp_password }}" class="input input-bordered input-sm w-full" required />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 安全设置 -->
+        <div class="collapse collapse-arrow bg-base-200 mb-4">
+            <input type="checkbox" /> 
+            <div class="collapse-title font-medium">
+                🔒 面板安全设置
+            </div>
+            <div class="collapse-content">
+                <div class="form-control gap-3 pt-2">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">登录账号</span></label>
+                            <input type="text" name="admin_user" value="{{ settings.admin_user }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                        <div>
+                            <label class="label pt-0"><span class="label-text text-xs">登录密码</span></label>
+                            <input type="password" name="admin_password" value="{{ settings.admin_password }}" class="input input-bordered input-sm w-full" required />
+                        </div>
+                    </div>
+                    <div class="text-xs text-warning mt-2">
+                        提示: 也可在 docker-compose 中通过环境变量修改。
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-action justify-between items-center">
+            <p class="text-xs opacity-50">修改后无需重启容器</p>
+            <div class="flex gap-2">
+                <!-- 关闭按钮 (不提交) -->
+                <button type="button" class="btn btn-ghost" onclick="settings_modal.close()">取消</button>
+                <!-- 提交按钮 -->
+                <button class="btn btn-primary">保存设置</button>
+            </div>
+        </div>
+    </form>
+  </div>
+  <!-- 点击遮罩层关闭 -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
 <script>
-    // 简单的时钟显示
+    // 时钟逻辑
     function updateClock() {
         const now = new Date();
-        document.getElementById('clock').innerText = now.toLocaleTimeString();
+        document.getElementById('clock').innerText = now.toLocaleTimeString('zh-CN', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
