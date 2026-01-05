@@ -1,15 +1,19 @@
 version: '3.8'
+
 services:
-  backup-pro:
-    image: your_dockerhub_username/mail-backup-pro:latest
+  mail-backup:
+    image: ghcr.io/workerspages/docker-mail-backup:latest
     container_name: mail-backup
     restart: always
     ports:
       - "8000:8000"
     volumes:
-      # 1. 映射宿主机需要备份的目录到容器内
-      - /:/host:ro  # :ro 表示 Read-Only (只读)，非常重要！
-      # 2. 持久化数据库文件
+      # 1. 映射宿主机根目录(只读)，以便备份任何文件
+      - /:/host:ro
+      # 2. 数据库持久化(必须，否则重启后任务丢失)
       - ./data:/data
     environment:
       - TZ=Asia/Shanghai
+      # --- 面板登录设置 (由此处控制) ---
+      - PANEL_USER=admin
+      - PANEL_PASSWORD=MySecretPassword2026
