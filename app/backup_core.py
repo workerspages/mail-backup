@@ -24,8 +24,8 @@ class BackupManager:
         self.backup_dir = "/tmp"
         # 排除列表 (支持通配符模式由 zip 命令处理)
         self.excludes = ["icon_cache", "trash", "sends", "*.sock", "mysql.sock", "__pycache__"]
-        # 分包大小: 35MB
-        self.chunk_size = 35 * 1024 * 1024
+        # 分包大小: 45MB (QQ邮箱附件为50M)
+        self.chunk_size = 45 * 1024 * 1024
 
     def log(self, message):
         print(f"[{self.task.get('name', 'Task')}] {message}")
