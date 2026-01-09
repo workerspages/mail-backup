@@ -191,7 +191,7 @@ class BackupManager:
         batches = []
         current_batch = []
         current_batch_size = 0
-        limit = self.chunk_size # 35MB
+        limit = self.chunk_size # 45MB
 
         # 分组逻辑
         for f in files:
