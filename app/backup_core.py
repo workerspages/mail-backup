@@ -1,4 +1,6 @@
 import os
+import glob
+import time
 import smtplib
 import datetime
 import subprocess
@@ -26,6 +28,11 @@ class BackupManager:
         self.excludes = ["icon_cache", "trash", "sends", "*.sock", "mysql.sock", "__pycache__"]
         # 分包大小: 45MB (QQ邮箱附件为50M)
         self.chunk_size = 45 * 1024 * 1024
+        # SMTP 连接超时(秒)。不设超时时,连接被对方静默掐断会让发送线程
+        # 无限期卡死,run() 的 finally 清理永远执行不到,分卷就会残留堆积。
+        self.smtp_timeout = 180
+        # 遗留文件判定年龄(秒):超过 24 小时的备份临时文件视为上次残留
+        self.stale_seconds = 24 * 3600
 
     def log(self, message):
         print(f"[{self.task.get('name', 'Task')}] {message}")
@@ -35,6 +42,9 @@ class BackupManager:
         temp_files = []
         try:
             self.log("任务开始...")
+
+            # 0. 先清理上次运行遗留的旧临时文件(进程被杀/卡死时 finally 没机会执行)
+            self._cleanup_stale()
             
             # 1. 准备路径和文件名
             source_path = self.task['path']
@@ -56,14 +66,23 @@ class BackupManager:
                 if p not in temp_files:
                     temp_files.append(p)
 
+            # 已切割时,原始 zip 的内容已完整存在于分卷中,本体立即删除,
+            # 避免 zip 与分卷双倍占用磁盘
+            if len(parts) > 1:
+                try:
+                    os.remove(output)
+                    temp_files.remove(output)
+                except OSError:
+                    pass
+
             # 4. 生成恢复工具 (如果进行了分包)
             restore_tool = None
             if len(parts) > 1:
                 restore_tool, script_files = self._create_restore_scripts(parts)
                 temp_files.extend(script_files)
 
-            # 5. 发送邮件
-            self._send_email(parts, restore_tool)
+            # 5. 发送邮件 (每批发送成功后立即删除对应分卷)
+            self._send_email(parts, restore_tool, deletable=set(parts))
             self.log("任务执行成功")
             return True
 
@@ -83,6 +102,26 @@ class BackupManager:
                     os.remove(f)
             except Exception as e:
                 self.log(f"清理临时文件失败 {f}: {e}")
+
+    def _cleanup_stale(self):
+        """清理 /tmp 中超过 24 小时的备份临时文件。
+
+        正常结束时 finally 会清理本轮文件;但进程被强杀或线程卡死时
+        finally 执行不到,残留会跨任务一直堆积。每次任务开始先扫一遍,
+        保证残留最多存活到下一次任务启动。24 小时内的文件不动,
+        避免误删另一个正在运行的任务的文件。
+        """
+        patterns = ["backup_*.zip", "backup_*.zip.*",
+                    "windows_restore.bat", "linux_restore.sh", "restore_tool.zip"]
+        now = time.time()
+        for pattern in patterns:
+            for path in glob.glob(os.path.join(self.backup_dir, pattern)):
+                try:
+                    if now - os.path.getmtime(path) > self.stale_seconds:
+                        os.remove(path)
+                        self.log(f"清理上次遗留文件: {path}")
+                except OSError:
+                    pass
 
     def _zip_dir(self, source, output):
         """调用系统 zip 命令压缩"""
@@ -119,7 +158,8 @@ class BackupManager:
                 cwd=parent_dir, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                timeout=6 * 3600
             )
             
             # exit code 18 是文件读取警告(如socket)，通常可忽略
@@ -132,6 +172,13 @@ class BackupManager:
                 return None
                 
             return output
+        except subprocess.TimeoutExpired:
+            self.log("压缩超时(6小时),已中止并删除未完成的压缩文件")
+            try:
+                os.remove(output)
+            except OSError:
+                pass
+            return None
         except Exception as e:
             self.log(f"压缩过程异常: {e}")
             return None
@@ -186,8 +233,10 @@ class BackupManager:
             
         return tool_zip, [bat_path, sh_path, tool_zip]
 
-    def _send_email(self, files, tool_path):
-        """智能分批发送邮件"""
+    def _send_email(self, files, tool_path, deletable=None):
+        """智能分批发送邮件。deletable 中的文件在所在批次发送成功后立即删除。"""
+        if deletable is None:
+            deletable = set()
         batches = []
         current_batch = []
         current_batch_size = 0
@@ -255,12 +304,20 @@ class BackupManager:
 
             # 发送动作
             try:
-                # SSL 发送
-                server = smtplib.SMTP_SSL(self.smtp['server'], int(self.smtp['port']))
+                # SSL 发送 (带超时,防止连接被掐断后无限期卡死)
+                server = smtplib.SMTP_SSL(self.smtp['server'], int(self.smtp['port']), timeout=self.smtp_timeout)
                 server.login(self.smtp['user'], self.smtp['password'])
                 server.sendmail(self.smtp['user'], to_addr, msg.as_string())
                 server.quit()
                 self.log(f"第 {index} 封邮件发送成功")
+                # 本批分卷已成功发出,立即删除:即使后续批次失败或进程被杀,
+                # 已发出的部分也不会残留占盘
+                for fp in list(batch):
+                    if fp in deletable:
+                        try:
+                            os.remove(fp)
+                        except OSError:
+                            pass
             except Exception as e:
                 self.log(f"邮件发送失败: {e}")
                 # 抛出异常以便外层捕获
