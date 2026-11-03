@@ -184,15 +184,14 @@ async def dashboard(request: Request, session: Session = Depends(get_session)):
     
     tasks = session.exec(select(BackupTask)).all()
     settings = get_settings(session)
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request, 
+    return templates.TemplateResponse(request, "dashboard.html", {
         "tasks": tasks, 
         "settings": settings
     })
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 @app.post("/login")
 async def login_action(
